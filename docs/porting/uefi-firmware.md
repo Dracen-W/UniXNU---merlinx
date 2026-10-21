@@ -65,6 +65,8 @@ pagesize = 4096
 | `uefi_fd.size` | Exact firmware volume size |
 | `boot_image_kernel.kernel_compression` | Compression of the shim and firmware volume |
 | `boot_image_kernel.append_dtb` | Append the device tree to the kernel field |
+
+For `header_version >= 2` the device tree is also placed in the boot image header's dtb section; `append_dtb = false` keeps it only there.
 | `boot_image.*` | Android boot image header parameters |
 
 The firmware base and size are compiled into BootShim. They are also checked when the boot image is packed.
