@@ -17,7 +17,7 @@ from .config import load_toml
 from .util import Error, log, run, sha256_file, tool
 
 DEFAULTS = {'header_version': 0, 'base': 0, 'kernel_offset': 0x8000, 'tags_offset': 0x1e00000, 'pagesize': 4096}
-MKBOOTIMG_FLAGS = ('base', 'kernel_offset', 'tags_offset', 'pagesize', 'header_version', 'ramdisk_offset', 'second_offset', 'cmdline')
+MKBOOTIMG_FLAGS = ('base', 'kernel_offset', 'tags_offset', 'pagesize', 'header_version', 'ramdisk_offset', 'second_offset', 'cmdline', 'dtb_offset')
 
 
 def compile_shim(uefi, base, size, requires_header, scratch):
@@ -91,7 +91,8 @@ def build(ctx, uefi, fd, dtb, ramdisk=None, output=None):
         if tree[:4] != b'\xd0\x0d\xfe\xed' or struct.unpack_from('>I', tree, 4)[0] != len(tree):
             raise Error('invalid compiled device tree')
         combined = shim + firmware
-        kernel = gzip.compress(combined, mtime=0) + tree
+        append_dtb = config.get('boot_image_kernel', {}).get('append_dtb', True)
+        kernel = gzip.compress(combined, mtime=0) + (tree if append_dtb else b'')
         kernel_path = scratch / 'Image.gz-dtb'
         kernel_path.write_bytes(kernel)
         if ramdisk:
@@ -102,11 +103,15 @@ def build(ctx, uefi, fd, dtb, ramdisk=None, output=None):
             ramdisk_path = scratch / 'ramdisk'
             ramdisk_path.write_bytes(b'')
         command = ['python3', mkbootimg, '--kernel', kernel_path, '--ramdisk', ramdisk_path, '-o', out]
+        if image['header_version'] >= 2:
+            dtb_path = scratch / 'device.dtb'
+            dtb_path.write_bytes(tree)
+            command += ['--dtb', str(dtb_path)]
         for key in MKBOOTIMG_FLAGS:
             if key in image:
                 command += [f'--{key}', str(image[key])]
         run(command, capture=True)
-        report = verify(out, combined, tree, ramdisk_path, image)
+        report = verify(out, combined, tree if append_dtb else b'', ramdisk_path, image)
     report.update(image_sha256=sha256_file(out), image_bytes=out.stat().st_size, fd_sha256=sha256_file(fd),
                   dtb_sha256=sha256_file(dtb), shim_bytes=len(shim), hardware_tested=False)
     (out.parent / 'boot.json').write_text(json.dumps(report, indent=2) + '\n')
