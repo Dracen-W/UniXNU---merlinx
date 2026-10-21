@@ -1,0 +1,39 @@
+# Board description of the Xiaomi Redmi Note 9 (merlinx, MT6768/MT6769Z), read by the unixnu build driver.
+
+[board]
+name = "merlinx"
+soc = "MT6768"
+description = "Xiaomi Redmi Note 9"
+kit = "merlinx"
+
+[kernel]
+defconfig = "merlinx_defconfig"
+
+[firmware]
+config = "merlinx"
+dsc = "Platforms/Xiaomi/merlinxPkg/merlinx.dsc"
+fd = "Build/merlinxPkg/{target}_CLANGPDB/FV/SILICIUM_UEFI.fd"
+submodules = [
+  "Common/Mu",
+  "Common/Mu_OEM_Sample",
+  "Mu_Basecore",
+  "Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl",
+]
+packages = [
+  "{uefi}",
+  "{uefi}/Platforms/Xiaomi",
+  "{uefi}/Silicon/MediaTek",
+  "{uefi}/Silicon/Silicium",
+  "{tree}/package",
+  "{tree}/drivers/DarwinBoot",
+  "{edk2}",
+  "{uefi}/Common/Mu",
+  "{uefi}/Common/Mu_OEM_Sample",
+]
+
+[firmware.defines]
+ENABLE_SECUREBOOT = "0"
+DEVICE_MODEL = "merlinx"
+MEMORY_PROTECTION = "TRUE"
+SHIP_MODE = "FALSE"
+BUILDID_STRING = "merlinx-research"
