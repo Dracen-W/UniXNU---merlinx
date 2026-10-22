@@ -27,6 +27,10 @@ on:
         description: IPSW URL (empty uses board.toml)
         required: false
         default: ""
+      pre_build:
+        description: Optional shell commands run in the UniXNU checkout before the kernel build
+        required: false
+        default: ""
       trust_cache_url:
         description: Trust cache bundle URL (optional)
         required: false
@@ -55,37 +59,57 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: macos-build-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HOMEBREW_NO_AUTO_UPDATE: 1
+  HOMEBREW_NO_INSTALL_CLEANUP: 1
+
 jobs:
   build:
-    runs-on: macos-15
+    runs-on: macos-latest
     timeout-minutes: 360
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: recursive
-          fetch-depth: 0
 
       - uses: actions/checkout@v4
         with:
           repository: ${{ inputs.device_repository }}
           ref: ${{ inputs.device_ref }}
           path: device
-          submodules: recursive
           token: ${{ secrets.UNIXNU_DEVICE_TOKEN || github.token }}
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
+      - name: Report the runner toolchain
+        run: |
+          sw_vers
+          uname -m
+          xcodebuild -version
+          xcode-select -p
+          xcrun --sdk iphoneos --find mig || echo 'mig not found for iphoneos'
+
       - name: Install host tools
         run: |
           brew install cmake ninja unifdef llvm mtools dtc
           echo "$(brew --prefix llvm)/bin" >> "$GITHUB_PATH"
+          echo "$(brew --prefix unifdef)/bin" >> "$GITHUB_PATH"
+
+      - name: Verify the host tools
+        run: |
+          for tool in git make clang cmake ninja unifdef mtools dtc xcodebuild; do
+            printf '%-10s %s\n' "$tool" "$(command -v "$tool" || echo MISSING)"
+          done
 
       - name: Select the device
         run: |
           ./unixnu defconfig "${{ inputs.defconfig }}" -D "$GITHUB_WORKSPACE/device"
-          ./unixnu fetch
+          ./unixnu fetch xnu libplatform libdispatch AvailabilityVersions libpthread \
+                          corecrypto-2023 IOStorageFamily -D "$GITHUB_WORKSPACE/device"
 
       - name: Prepare inputs
         env:
@@ -111,6 +135,13 @@ jobs:
             echo "skip_setup needs data_seed_url" >&2
             exit 1
           fi
+
+      - name: Run pre-build steps
+        if: inputs.pre_build != ''
+        env:
+          PRE_BUILD: ${{ inputs.pre_build }}
+          DEVICE_DIR: ${{ github.workspace }}/device
+        run: bash -euo pipefail -c "$PRE_BUILD"
 
       - name: Build kernel
         env:
@@ -168,3 +199,9 @@ jobs:
           path: out/*/userdata/**
           if-no-files-found: error
           retention-days: 7
+
+      - name: Remove proprietary inputs
+        if: always()
+        run: |
+          rm -rf out/ipsw out/feeds device/.cache/firmware out/*/tree/.cache/firmware
+          rm -f "$RUNNER_TEMP/trustcache" "$RUNNER_TEMP/data.dbr" "$RUNNER_TEMP/data-grow.dbr"
