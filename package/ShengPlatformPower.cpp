@@ -42,6 +42,8 @@ public:
   void enterCPUIdle(UInt64 *) override { unavailable(174); }
   void exitCPUIdle(UInt64 *) override { unavailable(175); }
   void updateCPUIdle(UInt64 *) override { unavailable(176); }
+  uint32_t readAon() override { return 0xffffffff; }
+  void writeAon(uint64_t) override { }
 #include "GuardedPMGRSlots.inc"
 };
 OSDefineMetaClassWithInit(ShengPlatformPower, ApplePMGR, )
