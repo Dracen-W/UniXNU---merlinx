@@ -56,6 +56,10 @@ on:
         description: Mark Setup as done in the Data seed
         type: boolean
         default: false
+      publish_artifacts:
+        description: Upload the kernel and payload as a private artifact (private repositories only)
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -240,6 +244,18 @@ jobs:
           if [ "$SKIP_SETUP" = true ]; then args+=(--skip-setup); fi
           ./unixnu build payload "${args[@]}"
 
+      - name: Upload private build artifacts
+        if: inputs.publish_artifacts && github.event.repository.private
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: merlinx-artifacts-${{ github.run_id }}
+          path: |
+            out/merlinx/kernel/kernel.macho
+            out/merlinx/payload/payload.img
+            out/merlinx/boot/boot.img
+          if-no-files-found: ignore
+          retention-days: 7
+
       - name: Collect the text logs
         id: logs
         if: always() && steps.check.outcome == 'success'
@@ -247,8 +263,8 @@ jobs:
           UNIXNU_UNIQUE_CHIP_ID: ${{ secrets.UNIXNU_UNIQUE_CHIP_ID }}
           BOARD: ${{ steps.check.outputs.board }}
         run: |
-          # Only *.log files are copied, with the secrets and the input URLs replaced. Kernels, payloads, disk images,
-          # kernelcaches and IPSW members are never uploaded: they derive from Apple software.
+          # Only *.log files are copied here, with the secrets and the input URLs replaced. The private artifact
+          # step above is gated to private repositories; public runs never upload Apple-derived images.
           python3 - <<'PY'
           import os, re, shutil
           from pathlib import Path
