@@ -23,6 +23,31 @@
 
 一个独立项目，通过 UEFI 在非 Apple ARM64 硬件上运行 iOS 与 macOS。
 
+## merlinx 移植
+
+本仓库是由 [Dracen-W](https://github.com/Dracen-W) 维护的 Redmi Note 9（merlinx，MT6768/MT6769Z）独立移植。UniXNU 组织不维护这个 fork。UEFI 源码位于 [uefi-merlinx](https://github.com/Dracen-W/uefi-merlinx)。
+
+| 组件 | 状态 |
+| --- | --- |
+| UEFI 固件 | `merlinxPkg` 可从源码构建，并从 p33 启动 |
+| BootShim | 自覆盖问题已修复；320 字节 shim 会先把 copy/clean 代码块搬到安全地址，再加载固件卷 |
+| 启动菜单 | 自定义 GOP 菜单可在屏幕显示；音量下滚动；音量上作为 Enter 的源码构建等待最终真机确认 |
+| 启动镜像 | 64 MiB p33 镜像；用 `fastboot flash boot` 刷入 |
+| 存储 | SdCardDxe 和 eMMC 初始化超时；Internal Storage 报 `EFI_NOT_FOUND`；USB 启动也失败 |
+| UniXNU 和 XNU | 尚未到达；没有 ADT、负载或内核运行记录 |
+
+`Mu_Basecore` 保持在上游提交。启动菜单补丁保存在 `uefi-merlinx`，并由 `board.toml` 引用；固件构建时会自动应用，构建结束后反向应用，因此新 clone 是自包含的。
+
+按顺序的目标：
+
+1. 修复 SdCardDxe 和 eMMC 超时，让 Internal Storage 枚举出来。
+2. 让 USB 存储或 USB 启动可作为恢复路径。
+3. 清理屏幕偏移、背景和 logo 交接。
+4. 加入 ADT 和负载，进入 XNU 入口。
+5. 从 XNU 入口推进到根挂载和 iOS 用户态。
+
+设备说明见 [docs/zh/devices/merlinx.md](docs/zh/devices/merlinx.md)。这台设备没有 UART，且这个 bootloader 不支持 `fastboot boot`；测试镜像通过 `fastboot flash boot` 刷入 p33。
+
 ## 文档
 
 文档位于 [unixnu.com](https://unixnu.com)，覆盖启动链、构建驱动、设备移植、驱动开发、XNU 4 KiB 页补丁、启动参数和设备说明。
