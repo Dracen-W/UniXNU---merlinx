@@ -35,6 +35,7 @@ archives = [
   "build-native-aes-bindings.py",
   "build-libpthread-kernel.py",
   "build-merlinx-stubs.py",
+  "build-merlinx-platform-power.py",
 ]
 
 [kernel.prelink]
@@ -76,6 +77,24 @@ roots = [
   "com.apple.iokit.IOHIDFamily",
   "com.apple.iokit.IOHIDEventDriver",
 ]
+
+[payload]
+volume = "MERLINX"
+size_mib = 56
+loader = "firmware"
+title = "UniXNU"
+dram_size = "0x100000000"
+panic_screen = true
+timeout = 3
+kernel_args = ["-v", "serial=3", "debug=0x14e", "-no_slto_panic", "sheng-pmgr=2"]
+
+[payload.adt]
+tool = "scripts/make-merlinx-adt.py"
+owned_memory_size = "0x10000000"
+cpu_regs = "0,0x100,0x200,0x300,0x400,0x500,0x600,0x700"
+psci_method = "smc"
+packed_data_ramdisk = false
+ipad_identity = false
 
 [firmware]
 config = "merlinx"
