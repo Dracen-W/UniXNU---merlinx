@@ -6,15 +6,15 @@ on:
       device_repository:
         description: Device repository as owner/name
         required: true
-        default: UniXNU/UniXNU-sheng
+        default: Dracen-W/UniXNU-merlinx
       device_ref:
         description: Device repository ref
         required: true
-        default: main
+        default: merlinx-work
       defconfig:
         description: Defconfig name (configs/ of the device repository)
         required: true
-        default: sheng_defconfig
+        default: merlinx_defconfig
       steps:
         description: Steps to build (nothing is uploaded except text logs; userdata needs about 16 GB of disk)
         type: choice
