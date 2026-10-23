@@ -17,6 +17,7 @@ from .config import load_toml
 from .util import Error, log, run, sha256_file, tool
 
 DEFAULTS = {'header_version': 0, 'base': 0, 'kernel_offset': 0x8000, 'tags_offset': 0x1e00000, 'pagesize': 4096}
+RAMDISK_BLOCK = 512
 MKBOOTIMG_FLAGS = ('base', 'kernel_offset', 'tags_offset', 'pagesize', 'header_version', 'ramdisk_offset', 'second_offset', 'cmdline', 'dtb_offset')
 
 
@@ -37,6 +38,14 @@ def compile_shim(uefi, base, size, requires_header, scratch):
     if requires_header and (shim[56:60] != b'ARM\x64' or struct.unpack_from('<QQ', shim, 8) != (base, len(shim) + size)):
         raise Error('the ARM64 image header does not describe the shim plus the firmware volume')
     return shim
+
+
+def pad_ramdisk(data, block=RAMDISK_BLOCK):
+    """Pad the ramdisk to whole sectors: the bootloader reports the initrd as a byte range, and the firmware media covers
+    whole sectors only, so a payload volume has to end on a sector boundary."""
+    if not data or len(data) % block == 0:
+        return data
+    return data + b'\0' * (block - len(data) % block)
 
 
 def patch_dtb(dtb, nodes, scratch):
@@ -96,12 +105,17 @@ def build(ctx, uefi, fd, dtb, ramdisk=None, output=None):
         kernel_path = scratch / 'Image.gz-dtb'
         kernel_path.write_bytes(kernel)
         if ramdisk:
-            ramdisk_path = Path(ramdisk)
-            if not ramdisk_path.is_file():
-                raise Error(f'ramdisk not found: {ramdisk_path}')
+            source = Path(ramdisk)
+            if not source.is_file():
+                raise Error(f'ramdisk not found: {source}')
+            data = source.read_bytes()
         else:
-            ramdisk_path = scratch / 'ramdisk'
-            ramdisk_path.write_bytes(b'')
+            data = b''
+        padded = pad_ramdisk(data)
+        if len(padded) != len(data):
+            log(f'bootimg: ramdisk padded {len(data)} -> {len(padded)} bytes to end on a sector boundary')
+        ramdisk_path = scratch / 'ramdisk'
+        ramdisk_path.write_bytes(padded)
         command = ['python3', mkbootimg, '--kernel', kernel_path, '--ramdisk', ramdisk_path, '-o', out]
         if image['header_version'] >= 2:
             dtb_path = scratch / 'device.dtb'
