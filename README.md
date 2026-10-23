@@ -31,7 +31,7 @@ This repository is the independent Xiaomi Redmi Note 9 (merlinx, MT6768/MT6769Z)
 | --- | --- |
 | UEFI firmware | `merlinxPkg` builds from source and boots from p33 |
 | BootShim | self-overwrite fixed; the 320-byte shim relocates the copy/clean block before loading the firmware volume |
-| Boot menu | custom GOP menu renders on the panel; volume-down scrolls; the volume-up Enter source build awaits its final hardware check |
+| Boot menu | custom GOP menu renders on the panel; volume-down scrolls; volume-up and power both select a menu entry |
 | Boot image | 64 MiB p33 image; flashes with `fastboot flash boot` |
 | Storage | SdCardDxe and eMMC init time out; Internal Storage reports `EFI_NOT_FOUND`; USB boot also fails |
 | UniXNU and XNU | not reached; no ADT, payload or kernel run |

@@ -31,7 +31,7 @@
 | --- | --- |
 | UEFI 固件 | `merlinxPkg` 可从源码构建，并从 p33 启动 |
 | BootShim | 自覆盖问题已修复；320 字节 shim 会先把 copy/clean 代码块搬到安全地址，再加载固件卷 |
-| 启动菜单 | 自定义 GOP 菜单可在屏幕显示；音量下滚动；音量上作为 Enter 的源码构建等待最终真机确认 |
+| 启动菜单 | 自定义 GOP 菜单可在屏幕显示；音量下滚动；音量上和电源键都能选中菜单项 |
 | 启动镜像 | 64 MiB p33 镜像；用 `fastboot flash boot` 刷入 |
 | 存储 | SdCardDxe 和 eMMC 初始化超时；Internal Storage 报 `EFI_NOT_FOUND`；USB 启动也失败 |
 | UniXNU 和 XNU | 尚未到达；没有 ADT、负载或内核运行记录 |
