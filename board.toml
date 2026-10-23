@@ -19,6 +19,9 @@ submodules = [
   "Mu_Basecore",
   "Silicon/Silicium/OpensslPkg/Library/OpensslLib/openssl",
 ]
+patches = [
+  "patches/0001-merlinx-custom-boot-menu.patch",
+]
 packages = [
   "{uefi}",
   "{uefi}/Platforms/Xiaomi",
