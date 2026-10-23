@@ -33,9 +33,8 @@ archives = [
   "build-arm-driver.py ArmCpu",
   "build-arm-driver.py NativeAES",
   "build-native-aes-bindings.py",
-  "build-arm-driver.py NativeRamBlock",
-  "build-native-virtio-bindings.py --component NativeRamBlock --directory build/native-ram-block",
   "build-libpthread-kernel.py",
+  "build-merlinx-stubs.py",
 ]
 
 [kernel.prelink]
