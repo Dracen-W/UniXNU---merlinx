@@ -32,6 +32,7 @@ archives = [
   "build-arm-driver.py ArmDTPlatform",
   "build-arm-driver.py ArmCpu",
   "build-arm-driver.py NativeAES",
+  "build-arm-driver.py NativeEmmc",
   "build-native-aes-bindings.py",
   "build-libpthread-kernel.py",
   "build-merlinx-stubs.py",
@@ -86,7 +87,7 @@ title = "UniXNU"
 dram_size = "0x100000000"
 panic_screen = true
 timeout = 3
-kernel_args = ["-v", "serial=3", "debug=0x14e", "-no_slto_panic", "sheng-pmgr=2"]
+kernel_args = ["-v", "serial=3", "debug=0x14e", "-no_slto_panic", "sheng-pmgr=2", "native-emmc-probe=2"]
 
 [payload.adt]
 tool = "scripts/make-merlinx-adt.py"
