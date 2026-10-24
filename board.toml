@@ -87,7 +87,7 @@ title = "UniXNU"
 dram_size = "0x100000000"
 panic_screen = true
 timeout = 3
-kernel_args = ["-v", "serial=3", "debug=0x14e", "-no_slto_panic", "sheng-pmgr=2", "native-emmc-probe=2"]
+kernel_args = ["-v", "serial=3", "debug=0x14e", "-no_slto_panic", "sheng-pmgr=2", "native-emmc-root=1"]
 
 [payload.adt]
 tool = "scripts/make-merlinx-adt.py"
