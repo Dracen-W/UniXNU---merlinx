@@ -33,6 +33,7 @@ archives = [
   "build-arm-driver.py ArmCpu",
   "build-arm-driver.py NativeAES",
   "build-arm-driver.py NativeEmmc",
+  "build-native-emmc-bindings.py",
   "build-native-aes-bindings.py",
   "build-libpthread-kernel.py",
   "build-merlinx-stubs.py",
