@@ -23,31 +23,6 @@
 
 An independent project to run iOS and macOS on non-Apple ARM64 hardware through UEFI.
 
-## merlinx port
-
-This repository is the independent Xiaomi Redmi Note 9 (merlinx, MT6768/MT6769Z) port maintained by [Dracen-W](https://github.com/Dracen-W). The UniXNU organization does not maintain this fork. The UEFI source is [uefi-merlinx](https://github.com/Dracen-W/uefi-merlinx).
-
-| Component | State |
-| --- | --- |
-| UEFI firmware | `merlinxPkg` builds from source and boots from p33 |
-| BootShim | self-overwrite fixed; the 320-byte shim relocates the copy/clean block before loading the firmware volume |
-| Boot menu | custom GOP menu renders on the panel; volume-down scrolls; volume-up and power both select a menu entry |
-| Boot image | 64 MiB p33 image; flashes with `fastboot flash boot` |
-| Storage | SdCardDxe and eMMC init time out; Internal Storage reports `EFI_NOT_FOUND`; USB boot also fails |
-| UniXNU and XNU | not reached; no ADT, payload or kernel run |
-
-`Mu_Basecore` stays at the upstream commit. The boot menu patch is stored in `uefi-merlinx` and referenced from `board.toml`; the firmware build applies it and reverses it afterwards, so a fresh clone is self-contained.
-
-Goals, in order:
-
-1. Fix the SdCardDxe and eMMC timeout so Internal Storage enumerates.
-2. Make USB storage or USB boot usable as a recovery path.
-3. Clean up the panel offset, background and logo handoff.
-4. Add the ADT and payload, then reach XNU entry.
-5. Move from XNU entry to root mount and iOS userland.
-
-The device notes are in [docs/devices/merlinx.md](docs/devices/merlinx.md). This device has no UART, and `fastboot boot` fails on this bootloader; test images are flashed to p33 with `fastboot flash boot`.
-
 ## Documentation
 
 The documentation is at [unixnu.com](https://unixnu.com). It covers the boot chain, the build driver, device porting, driver development, the 4 KiB XNU page patches, boot arguments and per-device notes.

@@ -65,8 +65,6 @@ pagesize = 4096
 | `uefi_fd.size` | 固件卷精确大小 |
 | `boot_image_kernel.kernel_compression` | shim 和固件卷的压缩方式 |
 | `boot_image_kernel.append_dtb` | 把设备树追加到 kernel 字段 |
-
-`header_version >= 2` 时，设备树还会放入 boot image 头部的 dtb 段；`append_dtb = false` 表示只放该段，不追加到 kernel。
 | `boot_image.*` | Android 启动镜像 header 参数 |
 
 固件基址和大小编译进 BootShim，并在打包启动镜像时检查。
